@@ -1,8 +1,14 @@
-from fastapi import FastAPI, Depends
-from auth.router import get_current_active_user, auth_router, register_router, verify_router, reset_password_router, users_router
 import uvicorn
-from db.database import create_db_and_tables
 from auth.models import User
+from auth.router import auth_router
+from auth.router import get_current_active_user
+from auth.router import register_router
+from auth.router import reset_password_router
+from auth.router import users_router
+from auth.router import verify_router
+from db.database import create_db_and_tables
+from fastapi import Depends
+from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -21,6 +27,7 @@ async def authenticated_route(user: User = Depends(get_current_active_user)):
 @app.on_event("startup")
 async def on_startup():
     await create_db_and_tables()
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", log_level="info", reload=True)
