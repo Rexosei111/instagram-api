@@ -1,22 +1,36 @@
-from fastapi_users.db import SQLAlchemyBaseUserTableUUID
-from db.database import Base
 import uuid
-from typing import Optional, Union
-from fastapi import Depends, Request
-from fastapi_users import BaseUserManager, UUIDIDMixin, InvalidPasswordException
-from .dependencies import get_user_db
-from settings import get_settings
-from .schemas import UserCreate
 from datetime import date
-from sqlalchemy import Column, String, Date
+from typing import Optional
+from typing import Union
 
+from fastapi import Depends
+from fastapi import Request
+from fastapi_users import BaseUserManager
+from fastapi_users import InvalidPasswordException
+from fastapi_users import UUIDIDMixin
+from fastapi_users_db_sqlalchemy.generics import GUID
+from settings import get_settings
+from sqlalchemy import Column
+from sqlmodel import Field
+from sqlmodel import SQLModel
+
+from .dependencies import get_user_db
+from .schemas import UserCreate
 
 settings = get_settings()
 
 
-class User(SQLAlchemyBaseUserTableUUID, Base):
-    fullname: str = Column(String(50), nullable=False)
-    birthdate: Optional[date] = Column(Date, nullable=True)
+class User(SQLModel, table=True):
+    id: Optional[uuid.UUID] = Field(
+        sa_column=(Column(GUID, primary_key=True, default=uuid.uuid4))
+    )
+    email: str = Field(max_length=320, unique=True, index=True, nullable=False)
+    hashed_password: str = Field(max_length=1024, nullable=False)
+    is_active: bool = Field(default=True, nullable=False)
+    is_superuser: bool = Field(default=False, nullable=False)
+    is_verified: bool = Field(default=False, nullable=False)
+    fullname: str = Field()
+    birthdate: Optional[date] = Field(nullable=True)
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
@@ -34,8 +48,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     async def on_after_request_verify(
         self, user: User, token: str, request: Optional[Request] = None
     ):
-        print(
-            f"Verification requested for user {user.id}. Verification token: {token}")
+        print(f"Verification requested for user {user.id}. Verification token: {token}")
 
     async def validate_password(
         self,
@@ -47,9 +60,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
                 reason="Password should be at least 8 characters"
             )
         if user.email in password:
-            raise InvalidPasswordException(
-                reason="Password should not contain e-mail"
-            )
+            raise InvalidPasswordException(reason="Password should not contain e-mail")
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):
