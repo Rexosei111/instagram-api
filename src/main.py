@@ -9,6 +9,7 @@ from auth.router import verify_router
 from db.database import create_db_and_tables
 from fastapi import Depends
 from fastapi import FastAPI
+from posts.router import post_router
 
 app = FastAPI()
 
@@ -17,6 +18,7 @@ app.include_router(register_router, prefix="/auth", tags=["Auth"])
 app.include_router(verify_router, prefix="/auth", tags=["Auth"])
 app.include_router(reset_password_router, prefix="/auth", tags=["Auth"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
+app.include_router(post_router)
 
 
 @app.get("/authenticated-route")

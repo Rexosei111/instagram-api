@@ -1,12 +1,15 @@
-from typing import Optional, Generic
 import datetime
-import uuid
-from pydantic import EmailStr
-from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate, CreateUpdateDictModel
+from typing import Optional
+
 from fastapi_users import models
+from fastapi_users.schemas import (
+    CreateUpdateDictModel,
+)
+from pydantic import EmailStr
+from sqlmodel import SQLModel
 
 
-class User(Generic[models.ID], CreateUpdateDictModel):
+class User(SQLModel):
     id: models.ID
     email: EmailStr
     fullname: str
