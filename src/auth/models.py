@@ -1,5 +1,6 @@
 import uuid
 from datetime import date
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -12,10 +13,12 @@ from fastapi_users_db_sqlalchemy.generics import GUID
 from settings import get_settings
 from sqlalchemy import Column
 from sqlmodel import Field
+from sqlmodel import Relationship
 from sqlmodel import SQLModel
 
 from .dependencies import get_user_db
 from .schemas import UserCreate
+
 
 settings = get_settings()
 
@@ -31,6 +34,7 @@ class User(SQLModel, table=True):
     is_verified: bool = Field(default=False, nullable=False)
     fullname: str = Field()
     birthdate: Optional[date] = Field(nullable=True)
+    posts: List["Post"] = Relationship(back_populates="user")
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):

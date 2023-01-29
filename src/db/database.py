@@ -8,7 +8,7 @@ from sqlmodel import SQLModel
 
 settings = get_settings()
 
-engine = create_async_engine(settings.sqlalchemy_database_url)
+engine = create_async_engine(settings.sqlalchemy_database_url, future=True, echo=True)
 
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
