@@ -22,7 +22,7 @@ async def get_all_posts(db: AsyncSession):
     return posts.scalars().all()
 
 
-async def get_post(db: AsyncSession, post_id: int):
+async def get_post(db: AsyncSession, post_id: int) -> Post:
     statement = select(Post).where(Post.id == post_id).options(selectinload(Post.user))
     post = await db.execute(statement)
     return post.scalar_one_or_none()
