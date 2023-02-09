@@ -35,6 +35,7 @@ class User(SQLModel, table=True):
     fullname: str = Field()
     birthdate: Optional[date] = Field(nullable=True)
     posts: List["Post"] = Relationship(back_populates="user")
+    comments: List["Comment"] = Relationship(back_populates="user")
 
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):

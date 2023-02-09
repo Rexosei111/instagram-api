@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from typing import Optional
 from uuid import UUID
 
@@ -19,3 +20,4 @@ class Post(PostBase, table=True):
     timestamp: Optional[datetime] = Field(default=datetime.now())
     user_id: Optional[UUID] = Field(default=None, foreign_key="user.id")
     user: Optional[models.User] = Relationship(back_populates="posts")
+    comments: List["Comment"] = Relationship(back_populates="post")
