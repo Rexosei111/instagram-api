@@ -7,9 +7,11 @@ from auth.router import get_current_active_user
 from db.database import get_async_session
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import HTTPException
+from fastapi import status
 from posts.services import get_post
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm.exc import NoResultFound
 
 from .models import Comment
 from .schemas import CommentCreate
@@ -38,10 +40,8 @@ async def create_comment(
     user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    try:
-        post = await get_post(db, post_id)
-    except NoResultFound:
-        return {"message": f"Post with id {post_id} not found"}
+
+    post = await get_post(db, post_id)
 
     comment: Comment = Comment.from_orm(
         commentData, update={"user_id": user.id, "post_id": post.id}
@@ -60,8 +60,15 @@ async def delete_comment(
 ):
     comment = await get_a_comment(db, comment_id, post_id)
     if comment.user.id != user.id:
-        return {"message": "Cannot delete this comment"}
-
-    await db.delete(comment)
-    await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You do not have the permission to delete this comment",
+        )
+    try:
+        await db.delete(comment)
+        await db.commit()
+    except SQLAlchemyError:
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong"
+        )
     return True
