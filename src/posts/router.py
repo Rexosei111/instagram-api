@@ -27,7 +27,6 @@ async def create_post(
     db: AsyncSession = Depends(get_async_session),
 ):
     new_post: Post = Post.from_orm(postData)
-    new_post.user = user
     new_post.user_id = user.id
     return await create_new_post(db=db, post=new_post)
 
